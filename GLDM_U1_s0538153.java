@@ -11,10 +11,10 @@ import java.lang.Math;
 public class GLDM_U1_s0538153 implements PlugIn {
 
 	final static String[] choices = { "Schwarzes Bild", "Gelbes Bild",
-			"Schwarz/Weiss Verlauf",
-			"Horiz. Schwarz/Rot vert. Schwarz/Blau Verlauf",
-			"Italienische Fahne", "Bahamische Fahne", "Japanische Fahne",
-			"Japanische Fahne mit weichen Kanten" };
+		"Schwarz/Weiss Verlauf",
+		"Horiz. Schwarz/Rot vert. Schwarz/Blau Verlauf",
+		"Italienische Fahne", "Bahamische Fahne", "Japanische Fahne",
+		"Japanische Fahne mit weichen Kanten", "Wei§e Fahne" };
 
 	private String choice;
 
@@ -143,88 +143,93 @@ public class GLDM_U1_s0538153 implements PlugIn {
 				}
 			}
 		} else if (choice.equals("Bahamische Fahne")) {
-			// Schleife ueber die y-Werte
-			// Blau
-			for (int y = 0; y < height / 3; y++) {
-				// Schleife ueber die x-Werte
+			float m1 = ((float) (height / 2) / (float) (width / 3));
+			float m2 = -((float) (height / 2) / (float) (width / 3));
+			boolean color = true;
+
+			for (double y = 0; y < height; y++) {
 				for (int x = 0; x < width; x++) {
-					if (y == x) {
-						for (int i = 0; i < x; i++) {
-							int pos = y * width + i; // Arrayposition bestimmen
+					int result1 = (int) Math.floor(m1 * x);
+					int result2 = (int) Math.floor(m2 * x + height - 1);
+					if (x < width / 3 + 1) {
+						if (y == result1) {
+									for (int i = 0; i <= x; i++) {
+								int pos = (int)y * width + i;
+
+								int r = 0;
+								int g = 0;
+								int b = 0;
+								pixels[pos] = 0xFF000000 | (r << 16) | (g << 8)	| b;
+
+								color = false;
+							}
+						} else if (y == result2) {
+							for (int i = 0; i <= x; i++) {
+								int pos = (int)y * width + i;
+								int r = 0;
+								int g = 0;
+								int b = 0;
+								pixels[pos] = 0xFF000000 | (r << 16) | (g << 8)| b;
+
+								color = false;
+							}
+						} else {
+							color = true;
+						}
+					}else {
+						color = true;
+					}
+					if (x == 149){
+						System.out.println(result1);
+					}
+
+						if (color) {
+							if (y >= 0 && y <= height / 3) {
+								int pos = (int)y * width + x;
+								int r = 0;
+								int g = 0;
+								int b = 255;
+								pixels[pos] = 0xFF000000 | (r << 16) | (g << 8)| b;
+							} else if (y > height / 3 && y <= height / 1.5) {
+								int pos = (int)y * width + x;
+								int r = 255;
+								int g = 255;
+								int b = 0;
+								pixels[pos] = 0xFF000000 | (r << 16) | (g << 8)| b;
+							} else if (y > height / 1.5 && y < height) {
+								int pos = (int)y * width + x;
+								int r = 0;
+								int g = 0;
+								int b = 255;
+								pixels[pos] = 0xFF000000 | (r << 16) | (g << 8)| b;
+							}	
+					}
+				}
+			}
+		} else if (choice.equals("Wei§e Fahne")) {
+			float m = -((float) height / (float) width);
+			int lineWidth = 60;
+			for (int y = 0; y < height; y++) {
+				for (int x = 0; x < width; x++) {
+					boolean white = true;
+					for (int i = -lineWidth / 2; i < lineWidth / 2; i++) {
+						int result = (int) Math.round(m * x + height + i);
+						if (y == result) {
+							int pos = y * width + x;
 							int r = 0;
 							int g = 0;
 							int b = 0;
 							pixels[pos] = 0xFF000000 | (r << 16) | (g << 8) | b;
+							white = false;
 						}
-
-					} else {
-						int pos = y * width + x; // Arrayposition bestimmen
-						int r = 0;
-						int g = 0;
+					}
+					if (white) {
+						int pos = (int) (y * width + x);
+						int r = 255;
+						int g = 255;
 						int b = 255;
 						pixels[pos] = 0xFF000000 | (r << 16) | (g << 8) | b;
 					}
-				}
-			}
-
-			// Gelb
-			for (double y = height / 3; y < height / 1.5; y++) {
-				// Schleife ueber die x-Werte
-				for (int x = 0; x < width / 3; x++) {
-					if (y == x) {
-						for (int i = height / 3; i < height / 2; i++) {
-							for (int j = width / 3; j < 0; j++) {
-								int pos = (int) (y + i * width + x + j); // Arrayposition
-																			// bestimmen
-								int r = 0;
-								int g = 0;
-								int b = 0;
-								pixels[pos] = 0xFF000000 | (r << 16) | (g << 8)
-										| b;
-							}
-						}
-					} else {
-						int pos = (int) (y * width + x); // Arrayposition
-															// bestimmen
-						int r = 255;
-						int g = 255;
-						int b = 0;
-						pixels[pos] = 0xFF000000 | (r << 16) | (g << 8) | b;
-					}
-				}
-				for (int x = width / 3; x < width; x++) {
-					/*
-					 * if (y == x) { for (int i = 0; i < height/2; i++) { int
-					 * pos = (int)(y * width + i); // Arrayposition bestimmen
-					 * int r = 0; int g = 0; int b = 0; pixels[pos] = 0xFF000000
-					 * | (r << 16) | (g << 8) | b; } } else {
-					 */
-					int pos = (int) (y * width + x); // Arrayposition bestimmen
-					int r = 255;
-					int g = 255;
-					int b = 0;
-					pixels[pos] = 0xFF000000 | (r << 16) | (g << 8) | b;
-					// }
-				}
-			}
-
-			// Blau
-			for (double y = height / 1.5; y < height - 1; y++) {
-				// Schleife ueber die x-Werte
-				for (int x = 0; x < width; x++) {
-					/*
-					 * if (y == x+400) { for (int i = 0; i < x; i++) { int pos =
-					 * (int)(y * width - i); // Arrayposition bestimmen int r =
-					 * 0; int g = 0; int b = 0; pixels[pos] = 0xFF000000 | (r <<
-					 * 16) | (g << 8) | b; }
-					 * 
-					 * } else {
-					 */
-					int pos = (int) (y * width + x); // Arrayposition bestimmen
-					int r = 0;
-					int g = 0;
-					int b = 255;
-					pixels[pos] = 0xFF000000 | (r << 16) | (g << 8) | b;
 				}
 			}
 		} else if (choice.equals("Japanische Fahne")) {
