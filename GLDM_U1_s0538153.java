@@ -149,10 +149,12 @@ public class GLDM_U1_s0538153 implements PlugIn {
 
 			for (double y = 0; y < height; y++) {
 				for (int x = 0; x < width; x++) {
-					int result1 = (int) Math.floor(m1 * x);
-					int result2 = (int) Math.floor(m2 * x + height - 1);
+					int result1Up = (int) Math.ceil(m1 * x);
+					int result2Up = (int) Math.ceil(m2 * x + height - 1);
+					int result1Down = (int) Math.floor(m1 * x);
+					int result2Down = (int) Math.floor(m2 * x + height - 1);
 					if (x < width / 3 + 1) {
-						if (y == result1) {
+						if (y == result1Up || y == result2Up || y == result1Down || y == result2Down) {
 									for (int i = 0; i <= x; i++) {
 								int pos = (int)y * width + i;
 
@@ -163,26 +165,12 @@ public class GLDM_U1_s0538153 implements PlugIn {
 
 								color = false;
 							}
-						} else if (y == result2) {
-							for (int i = 0; i <= x; i++) {
-								int pos = (int)y * width + i;
-								int r = 0;
-								int g = 0;
-								int b = 0;
-								pixels[pos] = 0xFF000000 | (r << 16) | (g << 8)| b;
-
-								color = false;
-							}
 						} else {
 							color = true;
 						}
 					}else {
 						color = true;
 					}
-					if (x == 149){
-						System.out.println(result1);
-					}
-
 						if (color) {
 							if (y >= 0 && y <= height / 3) {
 								int pos = (int)y * width + x;
