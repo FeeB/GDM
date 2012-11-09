@@ -79,6 +79,8 @@ public class GRDM_U2 implements PlugIn {
 		private JSlider jSliderHue;
 		
 		private double brightness;
+		private double contrast;
+		private double saettigung;
 
 		CustomWindow(ImagePlus imp, ImageCanvas ic) {
             super(imp, ic);
@@ -90,10 +92,10 @@ public class GRDM_U2 implements PlugIn {
         	Panel panel = new Panel();
 
             panel.setLayout(new GridLayout(4, 1));
-            jSliderBrightness = makeTitledSilder("Helligkeit 20", 0, 200, 100);
-            jSliderKontrast = makeTitledSilder("Kontrast 1.3", 0, 100, 50);
-            jSliderSaettigung = makeTitledSilder("SŠttigung 1.2", 0, 100, 50);
-            jSliderHue = makeTitledSilder("Hue 71.0", 0, 100, 50);
+            jSliderBrightness = makeTitledSilder("Helligkeit 20", 0, 256, 128);
+            jSliderKontrast = makeTitledSilder("Kontrast 1.3", 0, 10, 5);
+            jSliderSaettigung = makeTitledSilder("SŠttigung 1.2", 0, 5, 0);
+            jSliderHue = makeTitledSilder("Hue 71.0", 0, 360, 180);
             panel.add(jSliderBrightness);
             panel.add(jSliderKontrast);
             panel.add(jSliderSaettigung);
@@ -131,21 +133,25 @@ public class GRDM_U2 implements PlugIn {
 			JSlider slider = (JSlider)e.getSource();
 
 			if (slider == jSliderBrightness) {
-				brightness = slider.getValue()-100;
+				brightness = slider.getValue()-128;
 				String str = "Helligkeit " + brightness; 
-				setSliderTitle(jSliderBrightness, str); 
+				setSliderTitle(jSliderBrightness, str);
+				changePixelValues(imp.getProcessor());
 			}
 			
 			if (slider == jSliderKontrast) {
+				contrast = slider.getValue()-5;
 				int value = slider.getValue();
 				String str = "Kontrast 1.3 " + value; 
-				setSliderTitle(jSliderKontrast, str); 
+				setSliderTitle(jSliderKontrast, str);
+				changeContrast(imp.getProcessor());
 			}
 			
 			if (slider == jSliderSaettigung) {
-				int value = slider.getValue();
-				String str = "SŠttigung 1.2 " + value; 
-				setSliderTitle(jSliderSaettigung, str); 
+				saettigung = slider.getValue();
+				String str = "SŠttigung 1.2 " + saettigung; 
+				setSliderTitle(jSliderSaettigung, str);
+				changeSaettigung(imp.getProcessor());
 			}
 			
 			if (slider == jSliderHue) {
@@ -154,11 +160,89 @@ public class GRDM_U2 implements PlugIn {
 				setSliderTitle(jSliderHue, str); 
 			}
 			
-			changePixelValues(imp.getProcessor());
 			
 			imp.updateAndDraw();
 		}
-
+		
+		private void changeContrast(ImageProcessor ip){
+			int[] pixels = (int[])ip.getPixels();
+			
+			for (int y=0; y<height; y++) {
+				for (int x=0; x<width; x++) {
+					int pos = y*width + x;
+					int argb = origPixels[pos];  // Lesen der Originalwerte 
+					
+					int r = (argb >> 16) & 0xff;
+					int g = (argb >>  8) & 0xff;
+					int b =  argb        & 0xff;
+					
+					double schwellenwert = 127.5;
+					int rn = 0;
+					int gn = 0;
+					int bn = 0;
+					
+					if (r<schwellenwert){
+						rn = (int) (r - contrast*3);
+					}else if (r>schwellenwert){
+						rn = (int) (r + contrast*3);
+					}
+					if (g<schwellenwert){
+						gn = (int) (g - contrast*3);
+					}else if (g>schwellenwert){
+						gn = (int) (g + contrast*3);
+					}
+					if (b<schwellenwert){
+						bn = (int) (b - contrast*3);
+					}else if (b>schwellenwert){
+						bn = (int) (b + contrast*3);
+					}
+					
+					rn = pixelBegrenzen(rn);
+					gn = pixelBegrenzen(gn);
+					bn = pixelBegrenzen(bn);
+					
+					pixels[pos] = (0xFF<<24) | (rn<<16) | (gn<<8) | bn;
+				}
+			}
+			
+		}
+		
+		private void changeSaettigung(ImageProcessor ip){
+			int[] pixels = (int[])ip.getPixels();
+			
+			for (int y=0; y<height; y++) {
+				for (int x=0; x<width; x++) {
+					int pos = y*width + x;
+					int argb = origPixels[pos];  // Lesen der Originalwerte 
+					
+					int r = (argb >> 16) & 0xff;
+					int g = (argb >>  8) & 0xff;
+					int b =  argb        & 0xff;
+					
+					double  bigY = ((0.299 * r + 0.587 * g + 0.114 * b) );
+					double cb = ((-0.168736 * r - 0.331264 * g + 0.5 * b)*saettigung);
+					double cr = ((0.5 * r - 0.418688 * g - 0.081312 * b)*saettigung);
+					int rn = (int) (bigY + 1.402 * cr);
+					int gn = (int) (bigY - 0.3441 * cb - 0.7141 * cr);
+					int bn = (int) (bigY + 1.772 * cb);
+										
+					rn = pixelBegrenzen(rn);
+					gn = pixelBegrenzen(gn);
+					bn = pixelBegrenzen(bn);
+					
+					pixels[pos] = (0xFF<<24) | (rn<<16) | (gn<<8) | bn;
+				}
+			}
+		}
+		
+		private int pixelBegrenzen (int p){
+			if (p > 255){
+				p = 255;
+			}else if (p < 0){
+				p = 0;
+			}
+			return p;
+		}
 		
 		private void changePixelValues(ImageProcessor ip) {
 			
@@ -188,6 +272,10 @@ public class GRDM_U2 implements PlugIn {
 //					int bn = (int) (b + brightness);
 					
 					// Hier muessen die neuen RGB-Werte wieder auf den Bereich von 0 bis 255 begrenzt werden
+					
+					rn = pixelBegrenzen(rn);
+					gn = pixelBegrenzen(gn);
+					bn = pixelBegrenzen(bn);
 					
 					pixels[pos] = (0xFF<<24) | (rn<<16) | (gn<<8) | bn;
 				}
