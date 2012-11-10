@@ -258,8 +258,8 @@ public class GRDM_U2 implements PlugIn {
 					double cb = transformationToCb(r, g, b);
 					double cr = transformationToCr(r, g, b);
 					
-					double hueCb = Math.cos(hue) * -(Math.sin(hue)) * cb;
-					double hueCr = Math.sin(hue) * Math.cos(hue) * cr; 
+					double hueCb = Math.cos(hue) - (Math.sin(hue)) * cb;
+					double hueCr = Math.sin(hue) + Math.cos(hue) * cr; 
 					
 					int rn = transformationToR(bigY, hueCb, hueCr);
 					int gn = transformationToG(bigY, hueCb, hueCr);
