@@ -32,7 +32,7 @@ public class GRDM_U3 implements PlugIn {
 	private int width;
 	private int height;
 
-	String[] items = { "Original", "Rot-Kanal", "Graustufen", "Negativ des Bildes", "Binärnild" };
+	String[] items = { "Original", "Rot-Kanal", "Graustufen", "Negativ des Bildes", "Binärbild", "10 Graustufen", "5 Graustufen" };
 
 	public static void main(String args[]) {
 
@@ -199,19 +199,19 @@ public class GRDM_U3 implements PlugIn {
 								| bn;
 					}
 				}
-			}else if (method.equals("Binärnild")) {
+			}else if (method.equals("Binärbild")) {
 
 				for (int y = 0; y < height; y++) {
 					for (int x = 0; x < width; x++) {
 						int pos = y * width + x;
 						int argb = origPixels[pos]; // Lesen der Originalwerte
-						double schwellenwert = 127.5;
+						double schwellenwert = 255/2;
 
 						int r = (argb >> 16) & 0xff;
 						int g = (argb >> 8) & 0xff;
 						int b = argb & 0xff;
-
-						int value = (r + g + b) / 3;
+						
+						int value=(r+g+b)/3;
 
 						int rn = value;
 						int gn = value;
@@ -235,9 +235,63 @@ public class GRDM_U3 implements PlugIn {
 							bn = 0;
 						}
 
-//						pixelBegrenzen(rn);
-//						pixelBegrenzen(gn);
-//						pixelBegrenzen(bn);
+						// Hier muessen die neuen RGB-Werte wieder auf den
+						// Bereich von 0 bis 255 begrenzt werden
+
+						pixels[pos] = (0xFF << 24) | (rn << 16) | (gn << 8)
+								| bn;
+					}
+				}
+			}else if (method.equals("10 Graustufen")) {
+
+				for (int y = 0; y < height; y++) {
+					for (int x = 0; x < width; x++) {
+						int pos = y * width + x;
+						int argb = origPixels[pos]; // Lesen der Originalwerte
+						int graustufen = 10;
+
+						int r = (argb >> 16) & 0xff;
+						int g = (argb >> 8) & 0xff;
+						int b = argb & 0xff;
+						
+						int border = graustufenBorder(graustufen);
+						int step = graustufenStep(graustufen);
+						
+						int value=(r+g+b)/border*step;
+
+						int rn = value;
+						int gn = value;
+						int bn = value;
+
+						// Hier muessen die neuen RGB-Werte wieder auf den
+						// Bereich von 0 bis 255 begrenzt werden
+
+						pixels[pos] = (0xFF << 24) | (rn << 16) | (gn << 8)
+								| bn;
+					}
+				}
+			}else if (method.equals("5 Graustufen")) {
+
+				for (int y = 0; y < height; y++) {
+					for (int x = 0; x < width; x++) {
+						int pos = y * width + x;
+						int argb = origPixels[pos]; // Lesen der Originalwerte
+						int graustufen = 5;
+
+						int r = (argb >> 16) & 0xff;
+						int g = (argb >> 8) & 0xff;
+						int b = argb & 0xff;
+						
+						int border = graustufenBorder(graustufen);
+						int step = graustufenStep(graustufen);
+						
+						
+						
+						int value=(r+g+b)/border*step;
+
+						int rn = value;
+						int gn = value;
+						int bn = value;
 
 						// Hier muessen die neuen RGB-Werte wieder auf den
 						// Bereich von 0 bis 255 begrenzt werden
@@ -249,7 +303,21 @@ public class GRDM_U3 implements PlugIn {
 			}
 
 		}
+		private int graustufenBorder(int graustufen){
+						
+				int border=Math.round((255*3)/graustufen);
+				
+				return border;
+		}
+		
+		private int graustufenStep(int graustufen){
+			
+			int step=Math.round((255/graustufen));			
+			
+			return step;
+	}
 
+		
 		private int pixelBegrenzen(int p) {
 			if (p > 255) {
 				p = 255;
