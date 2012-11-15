@@ -32,7 +32,7 @@ public class GRDM_U2 implements PlugIn {
 
 	public static void main(String args[]) {
 		// new ImageJ();
-		IJ.open("/Users/Fee/Desktop/orchid.jpg");
+		IJ.open("/Users/stefankeil/Pictures/orchid.jpg");
 		// IJ.open("Z:/Pictures/Beispielbilder/orchid.jpg");
 
 		GRDM_U2 pw = new GRDM_U2();
@@ -258,8 +258,8 @@ public class GRDM_U2 implements PlugIn {
 					double cb = transformationToCb(r, g, b);
 					double cr = transformationToCr(r, g, b);
 					
-					double hueCb = Math.cos(hue) - (Math.sin(hue)) * cb;
-					double hueCr = Math.sin(hue) + Math.cos(hue) * cr; 
+					double hueCb = Math.cos(hue) - (Math.sin(Math.toRadians(hue))) * cb;
+					double hueCr = Math.sin(hue) + Math.cos(Math.toRadians(hue)) * cr; 
 					
 					int rn = transformationToR(bigY, hueCb, hueCr);
 					int gn = transformationToG(bigY, hueCb, hueCr);
@@ -290,9 +290,9 @@ public class GRDM_U2 implements PlugIn {
 					double cb = transformationToCb(r, g, b) * saettigung;
 					double cr = transformationToCr(r, g, b) * saettigung;
 
-					int rn = transformationToR(bigY, cb, cr);
-					int gn = transformationToG(bigY, cb, cr);
-					int bn = transformationToB(bigY, cb, cr);
+					int rn = (int)transformationToR(bigY, cb, cr);
+					int gn = (int)transformationToG(bigY, cb, cr);
+					int bn = (int)transformationToB(bigY, cb, cr);
 
 					rn = pixelBegrenzen(rn);
 					gn = pixelBegrenzen(gn);
