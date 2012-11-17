@@ -32,7 +32,7 @@ public class GRDM_U2 implements PlugIn {
 
 	public static void main(String args[]) {
 		// new ImageJ();
-		IJ.open("/Users/stefankeil/Pictures/orchid.jpg");
+		IJ.open("/Users/Fee/Desktop/orchid.jpg");
 		// IJ.open("Z:/Pictures/Beispielbilder/orchid.jpg");
 
 		GRDM_U2 pw = new GRDM_U2();
@@ -89,6 +89,8 @@ public class GRDM_U2 implements PlugIn {
 			// JPanel panel = new JPanel();
 			Panel panel = new Panel();
 
+			// Hier kšnnen Slider hinzugefŸgt werden und die AbstŠnde der Regler
+			// festgelegt werden
 			panel.setLayout(new GridLayout(4, 1));
 			jSliderBrightness = makeTitledSilder("Helligkeit 20", 0, 256, 128);
 			jSliderKontrast = makeTitledSilder("Kontrast 1.3", 0, 10, 5);
@@ -164,7 +166,8 @@ public class GRDM_U2 implements PlugIn {
 
 			imp.updateAndDraw();
 		}
-
+		
+		//Farbtransformation wird hier einmal fŸr alle kommenden Transformationen durchgefŸhrt laut Formel
 		private double transformationToY(int r, int g, int b) {
 			double bigY = ((0.299 * r + 0.587 * g + 0.114 * b));
 			return bigY;
@@ -206,12 +209,15 @@ public class GRDM_U2 implements PlugIn {
 					int r = (argb >> 16) & 0xff;
 					int g = (argb >> 8) & 0xff;
 					int b = argb & 0xff;
-
-					double schwellenwert = 127.5;
+					
+					//Schwellenwert um alle Werte Ÿber dem Schwellenwert dunkler und alle unter dem Schwellenwert heller zu machen
+					double schwellenwert = 255/2;
+					//Transformation RGB zu YCbCr
 					double bigY = transformationToY(r, g, b);
 					double cb = transformationToCb(r, g, b);
 					double cr = transformationToCr(r, g, b);
-
+					
+					//Abfrage ob Wert Ÿber oder unter dem Schwellenwert liegt, Kontrast wird dementsprechend abgezogen oder dazugerechnt
 					if (bigY < schwellenwert) {
 						bigY = (int) (bigY - contrast);
 					} else if (bigY > schwellenwert) {
@@ -227,11 +233,13 @@ public class GRDM_U2 implements PlugIn {
 					} else if (cr > schwellenwert) {
 						cr = (int) (cr + contrast);
 					}
-
+					
+					//Transformation von YCnCr zu RGB
 					int rn = transformationToR(bigY, cb, cr);
 					int gn = transformationToG(bigY, cb, cr);
 					int bn = transformationToB(bigY, cb, cr);
-
+					
+					//Pixel werden auf den Wert 0 bis 255 begrenzt
 					rn = pixelBegrenzen(rn);
 					gn = pixelBegrenzen(gn);
 					bn = pixelBegrenzen(bn);
@@ -241,8 +249,8 @@ public class GRDM_U2 implements PlugIn {
 			}
 
 		}
-		
-		private void farbDrehung(ImageProcessor ip){
+
+		private void farbDrehung(ImageProcessor ip) {
 			int[] pixels = (int[]) ip.getPixels();
 
 			for (int y = 0; y < height; y++) {
@@ -254,26 +262,33 @@ public class GRDM_U2 implements PlugIn {
 					int g = (argb >> 8) & 0xff;
 					int b = argb & 0xff;
 					
+					//Farbtransformation von RGB zu YCbCr
 					double bigY = transformationToY(r, g, b);
 					double cb = transformationToCb(r, g, b);
 					double cr = transformationToCr(r, g, b);
 					
-					double hueCb = Math.cos(hue) - (Math.sin(Math.toRadians(hue))) * cb;
-					double hueCr = Math.sin(hue) + Math.cos(Math.toRadians(hue)) * cr; 
+					//(cos - sin)*x: x ist in diesem Fall cb und der Winkel ist der eingegebene Wert Ÿber den Regler. Hier ist toRadians wichtig, da der Wert sonst nicht als WInkel erkannt wird
+					double hueCb = Math.cos(hue)
+							- (Math.sin(Math.toRadians(hue))) * cb;
+					//(sind + cos)*x: cr ist in diesem Fall cb
+					double hueCr = Math.sin(hue)
+							+ Math.cos(Math.toRadians(hue)) * cr;
 					
+					//Farbtransformation von YCbCr zu RGB
 					int rn = transformationToR(bigY, hueCb, hueCr);
 					int gn = transformationToG(bigY, hueCb, hueCr);
 					int bn = transformationToB(bigY, hueCb, hueCr);
 
+					//Pixel werden auf den Wert 0 bis 255 begrenzt
 					rn = pixelBegrenzen(rn);
 					gn = pixelBegrenzen(gn);
 					bn = pixelBegrenzen(bn);
-					
+
 					pixels[pos] = (0xFF << 24) | (rn << 16) | (gn << 8) | bn;
 				}
 			}
 		}
-		
+
 		private void changeSaettigung(ImageProcessor ip) {
 			int[] pixels = (int[]) ip.getPixels();
 
@@ -285,15 +300,19 @@ public class GRDM_U2 implements PlugIn {
 					int r = (argb >> 16) & 0xff;
 					int g = (argb >> 8) & 0xff;
 					int b = argb & 0xff;
-
+					
+					//Farbtransformation von RGB zu YCbCr
 					double bigY = transformationToY(r, g, b);
+					//Farbwerte mŸssen * den saettigungswert des Reglers genommen werden
 					double cb = transformationToCb(r, g, b) * saettigung;
 					double cr = transformationToCr(r, g, b) * saettigung;
-
-					int rn = (int)transformationToR(bigY, cb, cr);
-					int gn = (int)transformationToG(bigY, cb, cr);
-					int bn = (int)transformationToB(bigY, cb, cr);
-
+					
+					//Farbtransformation von RGB zu YCbCr
+					int rn = (int) transformationToR(bigY, cb, cr);
+					int gn = (int) transformationToG(bigY, cb, cr);
+					int bn = (int) transformationToB(bigY, cb, cr);
+					
+					//Pixel werden auf den Wert 0 bis 255 begrenzt
 					rn = pixelBegrenzen(rn);
 					gn = pixelBegrenzen(gn);
 					bn = pixelBegrenzen(bn);
@@ -302,7 +321,8 @@ public class GRDM_U2 implements PlugIn {
 				}
 			}
 		}
-
+		
+		//Funktion um Pixel zu begrenzen: alle Werte Ÿber 255 werden zu 255, alle Werte unter 0 werden zu 0
 		private int pixelBegrenzen(int p) {
 			if (p > 255) {
 				p = 255;
