@@ -155,19 +155,19 @@ public class GRDM_U3 implements PlugIn {
 						int r = (argb >> 16) & 0xff;
 						int g = (argb >> 8) & 0xff;
 						int b = argb & 0xff;
-
+						
+						//Um Graustufen zu erzeugen muss man den Mittelwert aller Werte berechnen
 						int value = (r + g + b) / 3;
-
+						
+						//Mittelwert wird dann allen Werte zugeteilt
 						int rn = value;
 						int gn = value;
 						int bn = value;
-
+						
+						//Pixel müssen auf 0 bis 255 begrenzt werden
 						pixelBegrenzen(rn);
 						pixelBegrenzen(gn);
 						pixelBegrenzen(bn);
-
-						// Hier muessen die neuen RGB-Werte wieder auf den
-						// Bereich von 0 bis 255 begrenzt werden
 
 						pixels[pos] = (0xFF << 24) | (rn << 16) | (gn << 8)
 								| bn;
@@ -183,17 +183,16 @@ public class GRDM_U3 implements PlugIn {
 						int r = (argb >> 16) & 0xff;
 						int g = (argb >> 8) & 0xff;
 						int b = argb & 0xff;
-
+						
+						//Der komplementäre Wert für jeden Wert muss berechnet werden
 						int rn = 255 - r;
 						int gn = 255 - g;
 						int bn = 255 - b;
-
+						
+						//Pixel müssen auf 0 bis 255 begrenzt werden
 						pixelBegrenzen(rn);
 						pixelBegrenzen(gn);
 						pixelBegrenzen(bn);
-
-						// Hier muessen die neuen RGB-Werte wieder auf den
-						// Bereich von 0 bis 255 begrenzt werden
 
 						pixels[pos] = (0xFF << 24) | (rn << 16) | (gn << 8)
 								| bn;
@@ -205,18 +204,23 @@ public class GRDM_U3 implements PlugIn {
 					for (int x = 0; x < width; x++) {
 						int pos = y * width + x;
 						int argb = origPixels[pos]; // Lesen der Originalwerte
+						
+						//Schwellenwert für Binärbild
 						double schwellenwert = 255/2;
 
 						int r = (argb >> 16) & 0xff;
 						int g = (argb >> 8) & 0xff;
 						int b = argb & 0xff;
 						
+						//Mittelwert aller drei Werte
 						int value=(r+g+b)/3;
-
+						
+						//Mittelwert wird zugeordnet
 						int rn = value;
 						int gn = value;
 						int bn = value;
 						
+						//Wenn wert über Schwellenwert bekommt der Pixel den Wert 255 zugewiesen, ansonsten 0
 						if (rn > schwellenwert){
 							rn = 255;
 						}else {
@@ -235,8 +239,7 @@ public class GRDM_U3 implements PlugIn {
 							bn = 0;
 						}
 
-						// Hier muessen die neuen RGB-Werte wieder auf den
-						// Bereich von 0 bis 255 begrenzt werden
+						//Pixel müssen nicht begrenzt werden, da sie entweder 255 oder 0 sind
 
 						pixels[pos] = (0xFF << 24) | (rn << 16) | (gn << 8)
 								| bn;
@@ -248,23 +251,26 @@ public class GRDM_U3 implements PlugIn {
 					for (int x = 0; x < width; x++) {
 						int pos = y * width + x;
 						int argb = origPixels[pos]; // Lesen der Originalwerte
+						
+						//Wie viele Graustufen gibt es
 						int graustufen = 10;
 
 						int r = (argb >> 16) & 0xff;
 						int g = (argb >> 8) & 0xff;
 						int b = argb & 0xff;
 						
-						int border = graustufenBorder(graustufen);
+						//Schwellenwert muss je nach Graustufenanzahl berechnet werden
+						int graustufenSchwellenwert = graustufenSchwellenwert(graustufen);
+						//Step bedeutet in wie viele Unterteilungen die Graustufen aufgeteilt werden
 						int step = graustufenStep(graustufen);
 						
-						int value=(r+g+b)/border*step;
-
+						//Die Berechnung ist dann der Wert aller Pixel durch den Schwellenwert mal die Anzahl der Graustufen
+						int value=(r+g+b)/graustufenSchwellenwert*step;
+						
+						//Wert wird Pixeln zugeordnet
 						int rn = value;
 						int gn = value;
 						int bn = value;
-
-						// Hier muessen die neuen RGB-Werte wieder auf den
-						// Bereich von 0 bis 255 begrenzt werden
 
 						pixels[pos] = (0xFF << 24) | (rn << 16) | (gn << 8)
 								| bn;
@@ -276,25 +282,27 @@ public class GRDM_U3 implements PlugIn {
 					for (int x = 0; x < width; x++) {
 						int pos = y * width + x;
 						int argb = origPixels[pos]; // Lesen der Originalwerte
+						
+						//Wie viele Graustufen gibt es?
 						int graustufen = 5;
 
 						int r = (argb >> 16) & 0xff;
 						int g = (argb >> 8) & 0xff;
 						int b = argb & 0xff;
 						
-						int border = graustufenBorder(graustufen);
+						//Schwellenwert muss je nach Graustufenanzahl berechnet werden
+						int graustufenSchwellenwert = graustufenSchwellenwert(graustufen);
+						//Step bedeutet in wie viele Unterteilungen die Graustufen aufgeteilt werden
 						int step = graustufenStep(graustufen);
 						
+						//Die Berechnung ist dann der Wert aller Pixel durch den Schwellenwert mal die Anzahl der Graustufen
+						int value=(r+g+b)/graustufenSchwellenwert*step;
 						
-						
-						int value=(r+g+b)/border*step;
-
+						//Wert wird Pixeln zugeordnet
 						int rn = value;
 						int gn = value;
 						int bn = value;
 
-						// Hier muessen die neuen RGB-Werte wieder auf den
-						// Bereich von 0 bis 255 begrenzt werden
 
 						pixels[pos] = (0xFF << 24) | (rn << 16) | (gn << 8)
 								| bn;
@@ -303,17 +311,18 @@ public class GRDM_U3 implements PlugIn {
 			}
 
 		}
-		private int graustufenBorder(int graustufen){
-						
+		
+		//Berechnung für den GraustufenSchwellenwert
+		private int graustufenSchwellenwert(int graustufen){
+				//Math.round damit keine Rundungsfehler entstehen
 				int border=Math.round((255*3)/graustufen);
-				
 				return border;
 		}
 		
+		//Berechnung für den die Graustufen
 		private int graustufenStep(int graustufen){
-			
+			//Math.round damit keine Rundungsfehler entstehen
 			int step=Math.round((255/graustufen));			
-			
 			return step;
 	}
 
