@@ -94,7 +94,7 @@ public class GRDM_U2 implements PlugIn {
 			panel.setLayout(new GridLayout(4, 1));
 			jSliderBrightness = makeTitledSilder("Helligkeit 20", 0, 256, 128);
 			jSliderKontrast = makeTitledSilder("Kontrast 1.3", 0, 10, 5);
-			jSliderSaettigung = makeTitledSilder("SŠttigung 1.2", 0, 5, 0);
+			jSliderSaettigung = makeTitledSilder("SŠttigung 1.2", 0, 50, 0);
 			jSliderHue = makeTitledSilder("Hue 71.0", 0, 360, 180);
 			panel.add(jSliderBrightness);
 			panel.add(jSliderKontrast);
@@ -143,7 +143,7 @@ public class GRDM_U2 implements PlugIn {
 			}
 
 			if (slider == jSliderKontrast) {
-				contrast = slider.getValue() - 5;
+				contrast = slider.getValue();
 				int value = slider.getValue();
 				String str = "Kontrast 1.3 " + value;
 				setSliderTitle(jSliderKontrast, str);
@@ -151,8 +151,8 @@ public class GRDM_U2 implements PlugIn {
 			}
 
 			if (slider == jSliderSaettigung) {
-				saettigung = slider.getValue();
-				String str = "SŠttigung 1.2 " + saettigung;
+				saettigung = slider.getValue()/10f;
+				String str = "SŠttigung 1.2 " + (Math.round(saettigung*100)/100f);
 				setSliderTitle(jSliderSaettigung, str);
 				changeSaettigung(imp.getProcessor());
 			}
