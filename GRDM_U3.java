@@ -10,9 +10,11 @@ import ij.process.ImageProcessor;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridLayout;
+import java.awt.Image;
 import java.awt.Panel;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.awt.image.Raster;
 
 import javax.swing.BorderFactory;
 import javax.swing.JComboBox;
@@ -32,7 +34,10 @@ public class GRDM_U3 implements PlugIn {
 	private int width;
 	private int height;
 
-	String[] items = { "Original", "Rot-Kanal", "Graustufen", "Negativ des Bildes", "Binärbild", "10 Graustufen", "5 Graustufen","Binärbild mit horizontaler Fehlerdiffusion","Sepia","6 Indexed Colors" };
+	String[] items = { "Original", "Rot-Kanal", "Graustufen",
+			"Negativ des Bildes", "Binärbild", "10 Graustufen", "5 Graustufen",
+			"Binärbild mit horizontaler Fehlerdiffusion", "Sepia",
+			"6 Indexed Colors" };
 
 	public static void main(String args[]) {
 
@@ -155,16 +160,17 @@ public class GRDM_U3 implements PlugIn {
 						int r = (argb >> 16) & 0xff;
 						int g = (argb >> 8) & 0xff;
 						int b = argb & 0xff;
-						
-						//Um Graustufen zu erzeugen muss man den Mittelwert aller Werte berechnen
+
+						// Um Graustufen zu erzeugen muss man den Mittelwert
+						// aller Werte berechnen
 						int value = (r + g + b) / 3;
-						
-						//Mittelwert wird dann allen Werte zugeteilt
+
+						// Mittelwert wird dann allen Werte zugeteilt
 						int rn = value;
 						int gn = value;
 						int bn = value;
-						
-						//Pixel müssen auf 0 bis 255 begrenzt werden
+
+						// Pixel müssen auf 0 bis 255 begrenzt werden
 						pixelBegrenzen(rn);
 						pixelBegrenzen(gn);
 						pixelBegrenzen(bn);
@@ -173,7 +179,7 @@ public class GRDM_U3 implements PlugIn {
 								| bn;
 					}
 				}
-			}else if (method.equals("Negativ des Bildes")) {
+			} else if (method.equals("Negativ des Bildes")) {
 
 				for (int y = 0; y < height; y++) {
 					for (int x = 0; x < width; x++) {
@@ -183,13 +189,14 @@ public class GRDM_U3 implements PlugIn {
 						int r = (argb >> 16) & 0xff;
 						int g = (argb >> 8) & 0xff;
 						int b = argb & 0xff;
-						
-						//Der komplementäre Wert für jeden Wert muss berechnet werden
+
+						// Der komplementäre Wert für jeden Wert muss berechnet
+						// werden
 						int rn = 255 - r;
 						int gn = 255 - g;
 						int bn = 255 - b;
-						
-						//Pixel müssen auf 0 bis 255 begrenzt werden
+
+						// Pixel müssen auf 0 bis 255 begrenzt werden
 						pixelBegrenzen(rn);
 						pixelBegrenzen(gn);
 						pixelBegrenzen(bn);
@@ -198,76 +205,82 @@ public class GRDM_U3 implements PlugIn {
 								| bn;
 					}
 				}
-			}else if (method.equals("Binärbild")) {
+			} else if (method.equals("Binärbild")) {
 
 				for (int y = 0; y < height; y++) {
 					for (int x = 0; x < width; x++) {
 						int pos = y * width + x;
 						int argb = origPixels[pos]; // Lesen der Originalwerte
-						
-						//Schwellenwert für Binärbild
-						double schwellenwert = 255/2;
+
+						// Schwellenwert für Binärbild
+						double schwellenwert = 255 / 2;
 
 						int r = (argb >> 16) & 0xff;
 						int g = (argb >> 8) & 0xff;
 						int b = argb & 0xff;
-						
-						//Mittelwert aller drei Werte
-						int value=(r+g+b)/3;
-						
-						//Mittelwert wird zugeordnet
+
+						// Mittelwert aller drei Werte
+						int value = (r + g + b) / 3;
+
+						// Mittelwert wird zugeordnet
 						int rn = value;
 						int gn = value;
 						int bn = value;
-						
-						//Wenn wert über Schwellenwert bekommt der Pixel den Wert 255 zugewiesen, ansonsten 0
-						if (rn > schwellenwert){
+
+						// Wenn wert über Schwellenwert bekommt der Pixel den
+						// Wert 255 zugewiesen, ansonsten 0
+						if (rn > schwellenwert) {
 							rn = 255;
-						}else {
+						} else {
 							rn = 0;
 						}
-						
-						if (gn > schwellenwert){
+
+						if (gn > schwellenwert) {
 							gn = 255;
-						}else {
+						} else {
 							gn = 0;
 						}
-						
-						if (bn > schwellenwert){
+
+						if (bn > schwellenwert) {
 							bn = 255;
-						}else {
+						} else {
 							bn = 0;
 						}
 
-						//Pixel müssen nicht begrenzt werden, da sie entweder 255 oder 0 sind
+						// Pixel müssen nicht begrenzt werden, da sie entweder
+						// 255 oder 0 sind
 
 						pixels[pos] = (0xFF << 24) | (rn << 16) | (gn << 8)
 								| bn;
 					}
 				}
-			}else if (method.equals("10 Graustufen")) {
+			} else if (method.equals("10 Graustufen")) {
 
 				for (int y = 0; y < height; y++) {
 					for (int x = 0; x < width; x++) {
 						int pos = y * width + x;
 						int argb = origPixels[pos]; // Lesen der Originalwerte
-						
-						//Wie viele Graustufen gibt es
+
+						// Wie viele Graustufen gibt es
 						int graustufen = 10;
 
 						int r = (argb >> 16) & 0xff;
 						int g = (argb >> 8) & 0xff;
 						int b = argb & 0xff;
-						
-						//Schwellenwert muss je nach Graustufenanzahl berechnet werden
+
+						// Schwellenwert muss je nach Graustufenanzahl berechnet
+						// werden
 						int graustufenSchwellenwert = graustufenSchwellenwert(graustufen);
-						//Step bedeutet in wie viele Unterteilungen die Graustufen aufgeteilt werden
+						// Step bedeutet in wie viele Unterteilungen die
+						// Graustufen aufgeteilt werden
 						int step = graustufenStep(graustufen);
-						
-						//Die Berechnung ist dann der Wert aller Pixel durch den Schwellenwert mal die Anzahl der Graustufen
-						int value=(r+g+b)/graustufenSchwellenwert*step;
-						
-						//Wert wird Pixeln zugeordnet
+
+						// Die Berechnung ist dann der Wert aller Pixel durch
+						// den Schwellenwert mal die Anzahl der Graustufen
+						int value = (r + g + b) / graustufenSchwellenwert
+								* step;
+
+						// Wert wird Pixeln zugeordnet
 						int rn = value;
 						int gn = value;
 						int bn = value;
@@ -276,71 +289,78 @@ public class GRDM_U3 implements PlugIn {
 								| bn;
 					}
 				}
-			}else if (method.equals("5 Graustufen")) {
+			} else if (method.equals("5 Graustufen")) {
 
 				for (int y = 0; y < height; y++) {
 					for (int x = 0; x < width; x++) {
 						int pos = y * width + x;
 						int argb = origPixels[pos]; // Lesen der Originalwerte
-						
-						//Wie viele Graustufen gibt es?
+
+						// Wie viele Graustufen gibt es?
 						int graustufen = 5;
 
 						int r = (argb >> 16) & 0xff;
 						int g = (argb >> 8) & 0xff;
 						int b = argb & 0xff;
-						
-						//Schwellenwert muss je nach Graustufenanzahl berechnet werden
+
+						// Schwellenwert muss je nach Graustufenanzahl berechnet
+						// werden
 						int graustufenSchwellenwert = graustufenSchwellenwert(graustufen);
-						//Step bedeutet in wie viele Unterteilungen die Graustufen aufgeteilt werden
+						// Step bedeutet in wie viele Unterteilungen die
+						// Graustufen aufgeteilt werden
 						int step = graustufenStep(graustufen);
-						
-						//Die Berechnung ist dann der Wert aller Pixel durch den Schwellenwert mal die Anzahl der Graustufen
-						int value=(r+g+b)/graustufenSchwellenwert*step;
-						
-						//Wert wird Pixeln zugeordnet
+
+						// Die Berechnung ist dann der Wert aller Pixel durch
+						// den Schwellenwert mal die Anzahl der Graustufen
+						int value = (r + g + b) / graustufenSchwellenwert
+								* step;
+
+						// Wert wird Pixeln zugeordnet
 						int rn = value;
 						int gn = value;
 						int bn = value;
-
 
 						pixels[pos] = (0xFF << 24) | (rn << 16) | (gn << 8)
 								| bn;
 					}
 				}
-			}else if (method.equals("Binärbild mit horizontaler Fehlerdiffusion")) {
-
+			} else if (method
+					.equals("Binärbild mit horizontaler Fehlerdiffusion")) {
+				int schwellenwert = 256 / 2;
 				for (int y = 0; y < height; y++) {
-					// Hier wird der zu addierende oder subtraktierende Wert gespeichert
+					// Hier wird der zu addierende oder subtraktierende Wert
+					// gespeichert
 					// sobald y sich ändert wird wieder auf 0 gesetzt
 					int Fehler = 0;
 
 					for (int x = 0; x < width; x++) {
 						int pos = y * width + x;
 						int argb = origPixels[pos]; // Lesen der Originalwerte
-						double schwellenwert = 255/2;
+
 						int r = (argb >> 16) & 0xff;
 						int g = (argb >> 8) & 0xff;
 						int b = argb & 0xff;
-						
-						//Mittelwert aller drei Werte
-						int value=(r+g+b)/3;
-						
-						// da Wert für alle drei Kanäle gleich ist, wird nur noch ein wert benötigt, 
-						// zu dem der Fehler vom letzten Pixel addiert bzw. subtrahiert wird
+
+						// Mittelwert aller drei Werte
+						int value = (r + g + b) / 3;
+
+						// da Wert für alle drei Kanäle gleich ist, wird nur
+						// noch ein wert benötigt,
+						// zu dem der Fehler vom letzten Pixel addiert bzw.
+						// subtrahiert wird
 						int grey = value + Fehler;
 
-						// Zuordnung des Grey Wertes unter Berücksichtigung des Schwellenwertes
+						// Zuordnung des Grey Wertes unter Berücksichtigung des
+						// Schwellenwertes
 						// Fehlerdifferenz wird ermittelt
-						if (grey > schwellenwert){
-							Fehler = (255 - grey)*(-1);
+						if (grey > schwellenwert) {
+							Fehler = (255 - grey) * (-1);
 							grey = 255;
-							
-						}else {
-							Fehler = (int)(schwellenwert + grey);
+
+						} else {
+							Fehler = (int) (schwellenwert + grey);
 							grey = 0;
 						}
-
 
 						// Hier muessen die neuen RGB-Werte wieder auf den
 						// Bereich von 0 bis 255 begrenzt werden
@@ -349,25 +369,27 @@ public class GRDM_U3 implements PlugIn {
 								| grey;
 					}
 				}
-			}else if (method.equals("Sepia")) {
+
+			} else if (method.equals("Sepia")) {
 
 				for (int y = 0; y < height; y++) {
 					for (int x = 0; x < width; x++) {
 						int pos = y * width + x;
 						int argb = origPixels[pos]; // Lesen der Originalwerte
-						
 
 						int r = (argb >> 16) & 0xff;
 						int g = (argb >> 8) & 0xff;
 						int b = argb & 0xff;
-						//Mittelwert aller drei Werte
-						int value=(r+g+b)/3;
-						// Rot und Grün Werte werden Prozentual erhöht, um den "Graustufenbild" gelb-braunen Farbstich zu verpassen
-						// Verhältnis ist ein wenig nach  eigenen Ermessen gewählt
-						int rn = (int)(value * 1.5);
-						int gn = (int)(value * 1.3);
-						int bn = (int)(value);
-						
+						// Mittelwert aller drei Werte
+						int value = (r + g + b) / 3;
+						// Rot und Grün Werte werden Prozentual erhöht, um den
+						// "Graustufenbild" gelb-braunen Farbstich zu verpassen
+						// Verhältnis ist ein wenig nach eigenen Ermessen
+						// gewählt
+						int rn = (int) (value * 1.5);
+						int gn = (int) (value * 1.3);
+						int bn = (int) (value);
+
 						rn = pixelBegrenzen(rn);
 						gn = pixelBegrenzen(gn);
 						bn = pixelBegrenzen(bn);
@@ -379,23 +401,85 @@ public class GRDM_U3 implements PlugIn {
 								| bn;
 					}
 				}
+			} else if (method.equals("6 Indexed Colors")) {
+
+				for (int y = 0; y < height; y++) {
+
+					for (int x = 0; x < width; x++) {
+						int pos = y * width + x;
+						int argb = origPixels[pos]; // Lesen der Originalwerte
+						int r = (argb >> 16) & 0xff;
+						int g = (argb >> 8) & 0xff;
+						int b = argb & 0xff;
+
+						// Wert wird Pixeln zugeordnet
+						int rn = 0;
+						int gn = 0;
+						int bn = 0;
+
+						// Die 6 Farben haben wir in Photoshop ermittelt mit hilfe von indexed color
+						
+						// schwarz
+						if (r <= 41) {
+							rn = 25;
+							gn = 29;
+							bn = 29;
+						}
+//						// blau
+//						else if (r > 25 && r < 80 && b > 75 && b< 256) {
+//							rn = 53;
+//							gn = 105;
+//							bn = 141;
+//						}			
+						// dunkelgrau
+						else if (r > 41 && r <= 107) {
+							rn = 62;
+							gn = 62;
+							bn = 60;
+						}
+//						// braun
+//						else if ((r > 36 && r <= 62) && g > 73){
+//							rn = 53;
+//							gn = 105;
+//							bn = 141;
+//						}
+						// mittelgrau
+						else if (r > 107 && r <= 181) {
+							rn = 152;
+							gn = 148;
+							bn = 146;
+						}
+						// hellgrau
+						else if (r > 181 && r <= 256) {
+							rn = 209;
+							gn = 207;
+							bn = 208;
+						}
+
+						// Hier muessen die neuen RGB-Werte wieder auf den
+						// Bereich von 0 bis 255 begrenzt werden
+
+						pixels[pos] = (0xFF << 24) | (rn << 16) | (gn << 8)
+								| bn;
+					}
+				}
 			}
 		}
-		//Berechnung für den GraustufenSchwellenwert
-		private int graustufenSchwellenwert(int graustufen){
-				//Math.round damit keine Rundungsfehler entstehen
-				int border=Math.round((255*3)/graustufen);
-				return border;
-		}
-		
-		//Berechnung für den die Graustufen
-		private int graustufenStep(int graustufen){
-			//Math.round damit keine Rundungsfehler entstehen
-			int step=Math.round((255/graustufen));			
-			return step;
-	}
 
-		
+		// Berechnung für den GraustufenSchwellenwert
+		private int graustufenSchwellenwert(int graustufen) {
+			// Math.round damit keine Rundungsfehler entstehen
+			int border = Math.round((255 * 3) / graustufen);
+			return border;
+		}
+
+		// Berechnung für den die Graustufen
+		private int graustufenStep(int graustufen) {
+			// Math.round damit keine Rundungsfehler entstehen
+			int step = Math.round((255 / graustufen));
+			return step;
+		}
+
 		private int pixelBegrenzen(int p) {
 			if (p > 255) {
 				p = 255;
