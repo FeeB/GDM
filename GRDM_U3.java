@@ -32,11 +32,11 @@ public class GRDM_U3 implements PlugIn {
 	private int width;
 	private int height;
 
-	String[] items = { "Original", "Rot-Kanal", "Graustufen", "Negativ des Bildes", "Binärbild", "10 Graustufen", "5 Graustufen" };
+	String[] items = { "Original", "Rot-Kanal", "Graustufen", "Negativ des Bildes", "Binärbild", "10 Graustufen", "5 Graustufen","Binärbild mit horizontaler Fehlerdiffusion","Sepia","6 Indexed Colors" };
 
 	public static void main(String args[]) {
 
-		IJ.open("/Users/Fee/Desktop/orchid.jpg");
+		IJ.open("/Users/StefanKeil/Pictures/Bear.jpg");
 		// IJ.open("Z:/Pictures/Beispielbilder/orchid.jpg");
 
 		GRDM_U3 pw = new GRDM_U3();
@@ -308,10 +308,79 @@ public class GRDM_U3 implements PlugIn {
 								| bn;
 					}
 				}
-			}
+			}else if (method.equals("Binärbild mit horizontaler Fehlerdiffusion")) {
 
+				for (int y = 0; y < height; y++) {
+					// Hier wird der zu addierende oder subtraktierende Wert gespeichert
+					// sobald y sich ändert wird wieder auf 0 gesetzt
+					int Fehler = 0;
+
+					for (int x = 0; x < width; x++) {
+						int pos = y * width + x;
+						int argb = origPixels[pos]; // Lesen der Originalwerte
+						double schwellenwert = 255/2;
+						int r = (argb >> 16) & 0xff;
+						int g = (argb >> 8) & 0xff;
+						int b = argb & 0xff;
+						
+						//Mittelwert aller drei Werte
+						int value=(r+g+b)/3;
+						
+						// da Wert für alle drei Kanäle gleich ist, wird nur noch ein wert benötigt, 
+						// zu dem der Fehler vom letzten Pixel addiert bzw. subtrahiert wird
+						int grey = value + Fehler;
+
+						// Zuordnung des Grey Wertes unter Berücksichtigung des Schwellenwertes
+						// Fehlerdifferenz wird ermittelt
+						if (grey > schwellenwert){
+							Fehler = (255 - grey)*(-1);
+							grey = 255;
+							
+						}else {
+							Fehler = (int)(schwellenwert + grey);
+							grey = 0;
+						}
+
+
+						// Hier muessen die neuen RGB-Werte wieder auf den
+						// Bereich von 0 bis 255 begrenzt werden
+
+						pixels[pos] = (0xFF << 24) | (grey << 16) | (grey << 8)
+								| grey;
+					}
+				}
+			}else if (method.equals("Sepia")) {
+
+				for (int y = 0; y < height; y++) {
+					for (int x = 0; x < width; x++) {
+						int pos = y * width + x;
+						int argb = origPixels[pos]; // Lesen der Originalwerte
+						
+
+						int r = (argb >> 16) & 0xff;
+						int g = (argb >> 8) & 0xff;
+						int b = argb & 0xff;
+						//Mittelwert aller drei Werte
+						int value=(r+g+b)/3;
+						// Rot und Grün Werte werden Prozentual erhöht, um den "Graustufenbild" gelb-braunen Farbstich zu verpassen
+						// Verhältnis ist ein wenig nach  eigenen Ermessen gewählt
+						int rn = (int)(value * 1.5);
+						int gn = (int)(value * 1.3);
+						int bn = (int)(value);
+						
+						rn = pixelBegrenzen(rn);
+						gn = pixelBegrenzen(gn);
+						bn = pixelBegrenzen(bn);
+
+						// Hier muessen die neuen RGB-Werte wieder auf den
+						// Bereich von 0 bis 255 begrenzt werden
+
+						pixels[pos] = (0xFF << 24) | (rn << 16) | (gn << 8)
+								| bn;
+					}
+				}
+			}
 		}
-		
 		//Berechnung für den GraustufenSchwellenwert
 		private int graustufenSchwellenwert(int graustufen){
 				//Math.round damit keine Rundungsfehler entstehen
