@@ -417,40 +417,47 @@ public class GRDM_U3 implements PlugIn {
 						int gn = 0;
 						int bn = 0;
 
-						// Die 6 Farben haben wir in Photoshop ermittelt mit hilfe von indexed color
-						
+						// Die 6 Farben haben wir in Photoshop ermittelt mit
+						// hilfe von indexed color
+						// Farbbereiche werden abgesteckt und dann mit den
+						// jeweiligen ermittelten Farben ersetzt
+						// relativ statisch, mögliche dynamische Lösung mit
+						// einem Histogramm,welche Farben am
+						// häufigsten in einem Bild vorkommen und dann
+						// "günstige" Farben berechnen
 						// schwarz
-						if (r <= 41) {
+						if (r <= 41 || r > 41 && r <= 62 && g < 80) {
 							rn = 25;
 							gn = 29;
 							bn = 29;
 						}
-//						// blau
-//						else if (r > 25 && r < 80 && b > 75 && b< 256) {
-//							rn = 53;
-//							gn = 105;
-//							bn = 141;
-//						}			
+						// blau
+						else if (((r > 41 && r <= 62) && g > 80)
+								|| ((r > 60 && r <= 100) && b > 100)) {
+							rn = 53;
+							gn = 105;
+							bn = 141;
+						}
 						// dunkelgrau
-						else if (r > 41 && r <= 107) {
+						else if (r > 62 && r <= 94) {
 							rn = 62;
 							gn = 62;
 							bn = 60;
 						}
-//						// braun
-//						else if ((r > 36 && r <= 62) && g > 73){
-//							rn = 53;
-//							gn = 105;
-//							bn = 141;
-//						}
+						// braun
+						else if (r > 94 && r <= 134) {
+							rn = 108;
+							gn = 96;
+							bn = 86;
+						}
 						// mittelgrau
-						else if (r > 107 && r <= 181) {
+						else if (r > 134 && r <= 180) {
 							rn = 152;
 							gn = 148;
 							bn = 146;
 						}
 						// hellgrau
-						else if (r > 181 && r <= 256) {
+						else if (r > 180 && r <= 256) {
 							rn = 209;
 							gn = 207;
 							bn = 208;
