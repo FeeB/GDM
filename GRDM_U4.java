@@ -129,7 +129,6 @@ public class GRDM_U4 implements PlugInFilter {
 					}
 					
 					if (methode == 4) {
-						
 						if (x + 1 > (z - 1) * (double) width / (length - 1)) {
 							int posNew = (int) (pos - ((z - 1) * (double) width / (length - 1)));
 							pixels_Erg[pos] = pixels_B[posNew];
@@ -139,6 +138,14 @@ public class GRDM_U4 implements PlugInFilter {
 								posNew = 0;
 							}
 							pixels_Erg[pos] = pixels_A[posNew];
+						}
+					}
+					
+					if (methode == 6) {
+						if ((x < z * ((width/3)*2) / length) && (x > z * (width/3) / length) && (y < z * ((height/3)*2) / length) && (x > z * (height/3) / length)){
+							pixels_Erg[pos] = pixels_A[pos];
+						}else {
+							pixels_Erg[pos] = pixels_B[pos];
 						}
 					}
 
