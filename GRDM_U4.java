@@ -87,7 +87,7 @@ public class GRDM_U4 implements PlugInFilter {
 			methode = 6;
 		if (s.equals("Overlay B|A"))
 			methode = 7;
-		
+
 		// Arrays fuer die einzelnen Bilder
 		int[] pixels_B;
 		int[] pixels_A;
@@ -125,9 +125,13 @@ public class GRDM_U4 implements PlugInFilter {
 					}
 
 					if (methode == 2) {
+						// trans ist die aktuelle Transparents, das andere Bild
+						// braucht dementsprechend 255 - diese transparenz
 						float trans = 255f / (length - 1) * (z - 1);
 						float dif = 255f - trans;
 
+						// Einem Bild wir die Transparenz zugeordnet, dem
+						// anderen die Differenz der Transparenz
 						int r = (int) ((trans * rA + dif * rB) / 255f);
 						int b = (int) ((trans * bA + dif * bB) / 255f);
 						int g = (int) ((trans * gA + dif * gB) / 255f);
@@ -145,16 +149,9 @@ public class GRDM_U4 implements PlugInFilter {
 								+ ((g & 0xff) << 8) + (b & 0xff);
 					}
 
-					if (methode == 7) {
-						int r = overlayChannel(rB, rA);
-						int b = overlayChannel(bB, bA);
-						int g = overlayChannel(gB, gA);
-
-						pixels_Erg[pos] = 0xFF000000 + ((r & 0xff) << 16)
-								+ ((g & 0xff) << 8) + (b & 0xff);
-					}
-
 					if (methode == 4) {
+						// das eine Bild wird verschoben nach rechts, das andere
+						// folgt von links auf die alte Position
 						if (x + 1 > (z - 1) * (double) width / (length - 1)) {
 							int posNew = (int) (pos - ((z - 1) * (double) width / (length - 1)));
 							pixels_Erg[pos] = pixels_B[posNew];
@@ -173,8 +170,8 @@ public class GRDM_U4 implements PlugInFilter {
 								+ (refG - gA) * (refG - gA) + (refB - bA)
 								* (refB - bA));
 
-						 pixels_Erg[pos] = distance < 100f ? pixels_B[pos] :
-						 pixels_A[pos];
+						pixels_Erg[pos] = distance < 100f ? pixels_B[pos]
+								: pixels_A[pos];
 					}
 
 					if (methode == 6) {
@@ -189,6 +186,16 @@ public class GRDM_U4 implements PlugInFilter {
 					}
 
 				}
+
+			if (methode == 7) {
+				int r = overlayChannel(rB, rA);
+				int b = overlayChannel(bB, bA);
+				int g = overlayChannel(gB, gA);
+
+				pixels_Erg[pos] = 0xFF000000 + ((r & 0xff) << 16)
+						+ ((g & 0xff) << 8) + (b & 0xff);
+			}
+
 		}
 
 		// neues Bild anzeigen
