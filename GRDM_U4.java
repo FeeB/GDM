@@ -22,7 +22,7 @@ public class GRDM_U4 implements PlugInFilter {
 		ImageJ ij = new ImageJ(); // neue ImageJ Instanz starten und anzeigen
 		ij.exitWhenQuitting(true);
 
-		IJ.open("/Users/stefankeil/Documents/Workspace/ImageJ/Picture/StackB.zip");
+		IJ.open("/Applications/ImageJ/Bilder/StackB.zip");
 
 		GRDM_U4 sd = new GRDM_U4();
 		sd.imp = IJ.getImage();
@@ -185,16 +185,15 @@ public class GRDM_U4 implements PlugInFilter {
 						}
 					}
 
+					if (methode == 7) {
+						int r = overlayChannel(rB, rA);
+						int b = overlayChannel(bB, bA);
+						int g = overlayChannel(gB, gA);
+
+						pixels_Erg[pos] = 0xFF000000 + ((r & 0xff) << 16)
+								+ ((g & 0xff) << 8) + (b & 0xff);
+					}
 				}
-
-			if (methode == 7) {
-				int r = overlayChannel(rB, rA);
-				int b = overlayChannel(bB, bA);
-				int g = overlayChannel(gB, gA);
-
-				pixels_Erg[pos] = 0xFF000000 + ((r & 0xff) << 16)
-						+ ((g & 0xff) << 8) + (b & 0xff);
-			}
 
 		}
 
