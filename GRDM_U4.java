@@ -9,7 +9,8 @@ import ij.plugin.filter.*;
 public class GRDM_U4 implements PlugInFilter {
 
 	protected ImagePlus imp;
-	final static String[] choices = { "Wischen", "Weiche Blende", "Overlay", "Schieb Blende", "Chroma Key",
+	final static String[] choices = { "Wischen", "Weiche Blende",
+			"Overlay A|B", "Overlay B|A", "Schieb Blende", "Chroma Keying",
 			"Extra" };
 
 	public int setup(String arg, ImagePlus imp) {
@@ -21,7 +22,7 @@ public class GRDM_U4 implements PlugInFilter {
 		ImageJ ij = new ImageJ(); // neue ImageJ Instanz starten und anzeigen
 		ij.exitWhenQuitting(true);
 
-		IJ.open("/Applications/ImageJ/Bilder/StackB.zip");
+		IJ.open("/Users/stefankeil/Documents/Workspace/ImageJ/Picture/StackB.zip");
 
 		GRDM_U4 sd = new GRDM_U4();
 		sd.imp = IJ.getImage();
@@ -76,19 +77,25 @@ public class GRDM_U4 implements PlugInFilter {
 			methode = 1;
 		if (s.equals("Weiche Blende"))
 			methode = 2;
-		if (s.equals("Overlay"))
+		if (s.equals("Overlay A|B"))
 			methode = 3;
 		if (s.equals("Schieb Blende"))
 			methode = 4;
-		if (s.equals("Croma Keying"))
+		if (s.equals("Chroma Keying"))
 			methode = 5;
 		if (s.equals("Extra"))
 			methode = 6;
-
+		if (s.equals("Overlay B|A"))
+			methode = 7;
+		
 		// Arrays fuer die einzelnen Bilder
 		int[] pixels_B;
 		int[] pixels_A;
 		int[] pixels_Erg;
+		// Werte für Chromakey
+		int refR = 224;
+		int refG = 168;
+		int refB = 64;
 
 		// Schleife ueber alle Bilder
 		for (int z = 1; z <= length; z++) {
@@ -118,44 +125,83 @@ public class GRDM_U4 implements PlugInFilter {
 					}
 
 					if (methode == 2) {
-						float trans = 255f / (length - 1) * (z - 1); 
+						float trans = 255f / (length - 1) * (z - 1);
 						float dif = 255f - trans;
 
 						int r = (int) ((trans * rA + dif * rB) / 255f);
 						int b = (int) ((trans * bA + dif * bB) / 255f);
 						int g = (int) ((trans * gA + dif * gB) / 255f);
 
-						pixels_Erg[pos] = 0xFF000000 + ((r & 0xff) << 16) + ((g & 0xff) << 8) + (b & 0xff);
+						pixels_Erg[pos] = 0xFF000000 + ((r & 0xff) << 16)
+								+ ((g & 0xff) << 8) + (b & 0xff);
 					}
-					
+
+					if (methode == 3) {
+						int r = overlayChannel(rA, rB);
+						int b = overlayChannel(bA, bB);
+						int g = overlayChannel(gA, gB);
+
+						pixels_Erg[pos] = 0xFF000000 + ((r & 0xff) << 16)
+								+ ((g & 0xff) << 8) + (b & 0xff);
+					}
+
+					if (methode == 7) {
+						int r = overlayChannel(rB, rA);
+						int b = overlayChannel(bB, bA);
+						int g = overlayChannel(gB, gA);
+
+						pixels_Erg[pos] = 0xFF000000 + ((r & 0xff) << 16)
+								+ ((g & 0xff) << 8) + (b & 0xff);
+					}
+
 					if (methode == 4) {
 						if (x + 1 > (z - 1) * (double) width / (length - 1)) {
 							int posNew = (int) (pos - ((z - 1) * (double) width / (length - 1)));
 							pixels_Erg[pos] = pixels_B[posNew];
-						}else {
+						} else {
 							int posNew = (int) (pos - ((z - 1) * (double) width / (length - 1)));
-							if (posNew < 0){
+							if (posNew < 0) {
 								posNew = 0;
 							}
 							pixels_Erg[pos] = pixels_A[posNew];
 						}
 					}
-					
+
+					if (methode == 5) {
+
+						double distance = Math.sqrt((refR - rA) * (refR - rA)
+								+ (refG - gA) * (refG - gA) + (refB - bA)
+								* (refB - bA));
+
+						 pixels_Erg[pos] = distance < 100f ? pixels_B[pos] :
+						 pixels_A[pos];
+					}
+
 					if (methode == 6) {
-						if ((x < z * ((width/3)*2) / length) && (x > z * (width/3) / length) && (y < z * ((height/3)*2) / length) && (x > z * (height/3) / length)){
+						if ((x < z * ((width / 3) * 2) / length)
+								&& (x > z * (width / 3) / length)
+								&& (y < z * ((height / 3) * 2) / length)
+								&& (x > z * (height / 3) / length)) {
 							pixels_Erg[pos] = pixels_A[pos];
-						}else {
+						} else {
 							pixels_Erg[pos] = pixels_B[pos];
 						}
 					}
 
 				}
-
 		}
 
 		// neues Bild anzeigen
 		Erg.show();
 		Erg.updateAndDraw();
 
+	}
+
+	private int overlayChannel(int Rv, int Rh) {
+		if (Rh <= 128) {
+			return Rv * Rh / 126;
+		} else {
+			return 255 - ((255 - Rv) * (255 - Rh) / 128);
+		}
 	}
 }
