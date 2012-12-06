@@ -8,4 +8,4 @@ Grundlagen Digitaler Medien Laboratory exercises:
 - Elementare Bildverarbeitung (Bildpunktoperatoren und Fehlerdiffusion)
 - Elementare Videoüberlagerungen in Java mit ImageJ
 
-**Collaborators: Fee Braun, Stefan Keil
+**Collaborators: Fee Braun, Stefan Keil**
