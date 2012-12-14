@@ -63,6 +63,7 @@ public class GRDM_U5 implements PlugIn {
 		height = ip.getHeight();
 
 		origPixels = ((int []) ip.getPixels()).clone();
+		System.out.println(origPixels[500]);
 	}
 
 
@@ -128,52 +129,51 @@ public class GRDM_U5 implements PlugIn {
 			}
 			
 			if (method.equals("Filter 1")) {
-
+				
+				int rn = 0;
+				int gn = 0;
+				int bn = 0;
+				int pos = 0;
+				
+				int r = 0;
+				int g = 0;
+				int b = 0;
+				
 				for (int y=0; y<height; y++) {
 					for (int x=0; x<width; x++) {
-						int pos = y*width + x;
-						int argb = origPixels[pos];  // Lesen der Originalwerte 
-
-						int r = (argb >> 16) & 0xff;
-						int g = (argb >>  8) & 0xff;
-						int b =  argb        & 0xff;
-						
-						int rn = r;
-						int gn = g;
-						int bn = b;
-						int value = 0;
-						
-						if (y-1 >= 0 && y+1 >= 0 && x-1 >= 0 && x+1 >= 0){
-							int test = y;
-							int testX = x;
-							for (int k = -1; k < 2; k++){
-								for (int i = 1; i < 2; i++){
-									if (y == test + k && x == testX + i){
-										for (int j = -1; j < 2; j ++){
-											value = value + ((test + k) * width + (testX+k));
-											System.out.println(value);
-										}
-										rn = 1/9 * value;
-										gn = 1/9 * value;
-										bn = 1/9 * value;
-										pixels[pos] = (0xFF<<24) | (rn<<16) | (gn << 8) | bn;
-									}
+						if (y > 1 && y < height -1 && x > 1 && x < width -1){
+							for (int k=-1; k < 2; k++) {
+								for (int l=-1; l < 2; l++){
+//									System.out.println("pos "+pos);
+									int test = (y+k)*width + (x+l);
+									int tes1 = origPixels[test];
+									System.out.println(tes1);
+									long argb = (origPixels[(y+k)*width + (x+l)] )*-1;  // Lesen der Originalwerte
+//									System.out.println("argb "+argb);
+									
+									r += 1/9 * ((argb >> 16) & 0xff);
+									System.out.println("r"+r);
+									g += 1/9 * ((argb >> 8) & 0xff);
+									System.out.println("g"+g);
+									b += 1/9 * (argb & 0xff);
+									System.out.println("b"+b);
+									
+									rn = r;
+									gn = g;
+									bn = b;
+									
 								}
-
 							}
 						}
+					}
+					pixels[pos] = (0xFF<<24) | (rn<<16) | (gn << 8) | bn;
+				}
+			}
 
 						
 //						pixels[pos] = (0xFF<<24) | (rn<<16) | (gn << 8) | bn;
 						
-					}
-				}
-			}
-			
-			
-			
+
 		}
-
-
 	} // CustomWindow inner class
 } 
