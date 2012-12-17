@@ -32,7 +32,7 @@ public class GRDM_U5 implements PlugIn {
 	private int width;
 	private int height;
 
-	String[] items = {"Original", "Filter 1"};
+	String[] items = {"Original", "Filter 1", "Filter 2", "Filter 3"};
 
 
 	public static void main(String args[]) {
@@ -63,7 +63,6 @@ public class GRDM_U5 implements PlugIn {
 		height = ip.getHeight();
 
 		origPixels = ((int []) ip.getPixels()).clone();
-		System.out.println(origPixels[500]);
 	}
 
 
@@ -133,47 +132,191 @@ public class GRDM_U5 implements PlugIn {
 				int rn = 0;
 				int gn = 0;
 				int bn = 0;
-				int pos = 0;
 				
-				int r = 0;
-				int g = 0;
-				int b = 0;
+				float r = 0;
+				float g = 0;
+				float b = 0;
+				float multi = 1/9f;
+				System.out.println("multi" + multi);
 				
 				for (int y=0; y<height; y++) {
 					for (int x=0; x<width; x++) {
+						//Begrenzen des y Wertes ohne Rand
 						if (y > 1 && y < height -1 && x > 1 && x < width -1){
+//						if (y == 4 && x == 3){
+							//Schleife Ÿber Zeilen des Kerns
 							for (int k=-1; k < 2; k++) {
+								//Schleife Ÿber Spalten des Kerns
 								for (int l=-1; l < 2; l++){
-//									System.out.println("pos "+pos);
-									int test = (y+k)*width + (x+l);
-									int tes1 = origPixels[test];
-									System.out.println(tes1);
-									long argb = (origPixels[(y+k)*width + (x+l)] )*-1;  // Lesen der Originalwerte
-//									System.out.println("argb "+argb);
+									int argb = origPixels[(y+k)*width + (x+l)];  // Lesen der Originalwerte
 									
-									r += 1/9 * ((argb >> 16) & 0xff);
-									System.out.println("r"+r);
-									g += 1/9 * ((argb >> 8) & 0xff);
-									System.out.println("g"+g);
-									b += 1/9 * (argb & 0xff);
-									System.out.println("b"+b);
-									
-									rn = r;
-									gn = g;
-									bn = b;
+									r += (multi * ((argb >> 16) & 0xff));
+//									System.out.println(multi * ((argb >> 16) & 0xff));
+//									System.out.println("r"+r);
+									g += (multi * ((argb >> 8) & 0xff));
+//									System.out.println("g"+g);
+									b += (multi * (argb & 0xff));
+//									System.out.println("b"+b);
 									
 								}
 							}
+							int pos = y * width + x;
+							
+							r = pixelLimiting(r);
+							g = pixelLimiting(g);
+							b = pixelLimiting(b);							
+							
+							rn = (int) r;
+							gn = (int) g;
+							bn = (int) b;
+							
+							pixels[pos] = (0xFF<<24) | (rn<<16) | (gn << 8) | bn;
+							
+							// r, g, b zurŸcksetzen da sonst das Bild wei§ wird.
+							r = 0;
+							g = 0;
+							b = 0;
 						}
 					}
-					pixels[pos] = (0xFF<<24) | (rn<<16) | (gn << 8) | bn;
+				}
+			}	
+			
+			if (method.equals("Filter 2")) {
+
+				
+				int rn = 0;
+				int gn = 0;
+				int bn = 0;
+				
+				float r = 0;
+				float g = 0;
+				float b = 0;
+				float multi = -1/9f;
+				System.out.println("multi" + multi);
+				
+				float matrix = 1 - multi;
+				
+				for (int y=0; y<height; y++) {
+					for (int x=0; x<width; x++) {
+						//Begrenzen des y Wertes ohne Rand
+						if (y > 1 && y < height -1 && x > 1 && x < width -1){
+//						if (y == 4 && x == 3){
+							//Schleife Ÿber Zeilen des Kerns
+							for (int k=-1; k < 2; k++) {
+								//Schleife Ÿber Spalten des Kerns
+								for (int l=-1; l < 2; l++){
+									int argb = origPixels[(y+k)*width + (x+l)];  // Lesen der Originalwerte
+									if (k == 0 && l == 0){
+										r += (matrix * ((argb >> 16) & 0xff));
+										g += (matrix * ((argb >> 8) & 0xff));
+										b += (matrix * (argb & 0xff));
+									}else{
+										r += (multi * ((argb >> 16) & 0xff));
+	//									System.out.println(multi * ((argb >> 16) & 0xff));
+	//									System.out.println("r"+r);
+										g += (multi * ((argb >> 8) & 0xff));
+	//									System.out.println("g"+g);
+										b += (multi * (argb & 0xff));
+	//									System.out.println("b"+b);
+									}									
+								}
+							}
+							int pos = y * width + x;
+							
+							r = pixelLimiting(r+128);
+							g = pixelLimiting(g+128);
+							b = pixelLimiting(b+128);							
+							
+							rn = (int) r;
+							gn = (int) g;
+							bn = (int) b;
+							
+							pixels[pos] = (0xFF<<24) | (rn<<16) | (gn << 8) | bn;
+							
+							// r, g, b zurŸcksetzen da sonst das Bild wei§ wird.
+							r = 0;
+							g = 0;
+							b = 0;
+						}
+					}
 				}
 			}
+			
+			if (method.equals("Filter 3")){
 
-						
-//						pixels[pos] = (0xFF<<24) | (rn<<16) | (gn << 8) | bn;
-						
 
+				
+				int rn = 0;
+				int gn = 0;
+				int bn = 0;
+				
+				float r = 0;
+				float g = 0;
+				float b = 0;
+				float multi = -1/9f;
+				System.out.println("multi" + multi);
+				
+				float matrix = 1 + (1 - multi);
+				System.out.println(matrix);
+				
+				for (int y=0; y<height; y++) {
+					for (int x=0; x<width; x++) {
+						//Begrenzen des y Wertes ohne Rand
+						if (y > 1 && y < height -1 && x > 1 && x < width -1){
+//						if (y == 4 && x == 3){
+							//Schleife Ÿber Zeilen des Kerns
+							for (int k=-1; k < 2; k++) {
+								//Schleife Ÿber Spalten des Kerns
+								for (int l=-1; l < 2; l++){
+									int argb = origPixels[(y+k)*width + (x+l)];  // Lesen der Originalwerte
+									if (k == 0 && l == 0){
+										r += (matrix * ((argb >> 16) & 0xff));
+										g += (matrix * ((argb >> 8) & 0xff));
+										b += (matrix * (argb & 0xff));
+									}else{
+										r += (multi * ((argb >> 16) & 0xff));
+	//									System.out.println(multi * ((argb >> 16) & 0xff));
+	//									System.out.println("r"+r);
+										g += (multi * ((argb >> 8) & 0xff));
+	//									System.out.println("g"+g);
+										b += (multi * (argb & 0xff));
+	//									System.out.println("b"+b);
+									}									
+								}
+							}
+							int pos = y * width + x;
+							
+							r = pixelLimiting(r);
+							g = pixelLimiting(g);
+							b = pixelLimiting(b);							
+							
+							rn = (int) r;
+							gn = (int) g;
+							bn = (int) b;
+							
+							pixels[pos] = (0xFF<<24) | (rn<<16) | (gn << 8) | bn;
+							
+							// r, g, b zurŸcksetzen da sonst das Bild wei§ wird.
+							r = 0;
+							g = 0;
+							b = 0;
+						}
+					}
+				}
+			
+			}
 		}
-	} // CustomWindow inner class
+		
+		
+		public float pixelLimiting(float pixel){
+			if (pixel < 0){
+				return 0;
+			}else if (pixel > 255){
+				return 255;
+			}else {
+				return pixel;
+			}
+		}
+		
+	}
 } 
