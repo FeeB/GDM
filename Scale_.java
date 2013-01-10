@@ -91,7 +91,9 @@ public class Scale_ implements PlugInFilter {
 					int pos_x = Math.round(width_faktor * x_n);
 					int pos_y = Math.round(height_faktor * y_n);
 					
+					// position wird in bezug auf den faktor aufgerufen
 					int pos = pos_y * width + pos_x;
+					
 					int pos_n = y_n * width_n + x_n;
 					
 					if (pos >= (width * height)) {
@@ -134,7 +136,7 @@ public class Scale_ implements PlugInFilter {
 						int g1 = (argb >> 8) & 0xff;
 						int b1 = argb & 0xff;
 
-						pos = pos_y * width + pos_x;
+						pos = (pos_y-1) * width + pos_x+1;
 						
 						if (pos >= (width * height))
 							pos = width * height - 1;
@@ -143,7 +145,7 @@ public class Scale_ implements PlugInFilter {
 						int g2 = (argb >> 8) & 0xff;
 						int b2 = argb & 0xff;
 
-						pos = (pos_y - 1) * width + pos_x;
+						pos = (pos_y + 1) * width + pos_x-1;
 						
 						if (pos >= (width * height))
 							pos = width * height - 1;
@@ -152,7 +154,7 @@ public class Scale_ implements PlugInFilter {
 						int g3 = (argb >> 8) & 0xff;
 						int b3 = argb & 0xff;
 
-						pos = (pos_y - 1) * width + (pos_x - 1);
+						pos = (pos_y + 1) * width + (pos_x + 1);
 						
 						if (pos >= (width * height))
 							pos = width * height - 1;
@@ -160,11 +162,10 @@ public class Scale_ implements PlugInFilter {
 						int r4 = (argb >> 16) & 0xff;
 						int g4 = (argb >> 8) & 0xff;
 						int b4 = argb & 0xff;
-						 
-						int h = (int)((x_n * width_faktor) - Math.round(x_n * width_faktor ));
-						int v = (int)((y_n * height_faktor)- Math.round(y_n * height_faktor ));;
+												
+						double h = ((width_faktor * x_n) % 1);
+						double v = ((height_faktor * y_n) % 1);
 
-						
 						// Berchnung der Bildpunkte an nicht ganzzahligen Pos., entsprechend der Gewichtung
 						int r = (int) ((r1 * (1 - h) * (1 - v))
 								+ (r2 * h * (1 - v)) + (r3 * (1 - h) * v) + (r4
@@ -176,12 +177,10 @@ public class Scale_ implements PlugInFilter {
 								+ (b2 * h * (1 - v)) + (b3 * (1 - h) * v) + (b4
 								* h * v));
 						
-							pos = pos_y * width + pos_x;
+
 						int pos_n = y_n * width_n + x_n;
 
-						if (pos >= (width * height)){
-							pos = width * height - 1;
-						}
+
 						pix_n[pos_n] = (0xFF << 24) | (r << 16) | (g << 8) | b;
 					}
 				}
